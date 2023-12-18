@@ -1,9 +1,14 @@
+def instantiateCustomerDb():
+    with open('customerDB.csv', 'w') as customerDB:
+        customerDB.write("\n Surname, Name, Email, Password\n")
+        customerDB.close()
+
 def checkCustomerStatus():
     print("Are you an existing customer ? (y/n)")
     customerStatusFlag = input()
     if customerStatusFlag == 'y':
         print("Welcome back, customer")
-        login()
+        login() 
     elif customerStatusFlag == 'n':
         print("Hello! new customer")
         createAccount()
@@ -25,15 +30,8 @@ def createAccount():
     confirmPassword = input()
     if password == confirmPassword:
         print("Account created successfully")
-        print("Would you like to login ? (y/n)")
-        loginFlag = input()
-        if loginFlag == 'y':
-            login()
-        elif loginFlag == 'n':
-            print("Thank you for creating an account. See you soon !")
-        else:
-            print("Invalid input")
-            createAccount()
+        writeToCustomerDB(surname, name, email, password)
+        checkCustomerStatus()
     else:
         print("Password mismatch")
         createAccount()
@@ -43,7 +41,54 @@ def login():
     email = input()
     print("Enter your password")
     password = input()
+    with open('customerDB.csv', 'r') as customerDB:
+        for line in customerDB:
+            if email in line:
+                if password in line:
+                    print("Login successful")
+                    parts = line.split(',')
+                    surname = parts[0].strip()
+                    name = parts[1].strip()
+                    email = parts[2].strip()
+                    customerDB.close()
+                    homePage(name, surname)
+                else:
+                    print("Incorrect password")
+                    login()
+            else:
+                print("Email not found. Please create an account or contact customer support at 1800-000-000")
+                checkCustomerStatus()
 
-print("Welcome to Shakthi Bank")
-print()
-checkCustomerStatus()
+def writeToCustomerDB(surname, name, email, password):
+    with open('customerDB.csv', 'a') as customerDB:
+        customerDB.write(surname + "," + name + "," + email + "," + password + "\n")
+
+def homePage(name, surname, email):
+    print("Welcome "+ name +" "+ surname)
+    print("What would you like to do today ?")
+    print("1. Deposit")
+    print("2. Withdraw")
+    print("3. Print Statement")
+    print("4. Exit")
+    option = input()
+    if option == '1':
+        deposit(email)
+    elif option == '2':
+        withdraw()
+    elif option == '3':
+        printStatement()
+    elif option == '4':
+        exit()
+    else:
+        print("Invalid input")
+        homePage()
+
+                
+
+
+
+if __name__ == "__main__":
+    print("Welcome to Shakthi Bank")
+    print()
+    instantiateCustomerDb()
+    checkCustomerStatus()
