@@ -88,14 +88,14 @@ def homePage(name, surname, email):
     if option == '1':
         deposit(name, surname, email)
     elif option == '2':
-        withdraw()
+        withdraw(name, surname, email)
     elif option == '3':
         printStatement()
     elif option == '4':
         exit()
     else:
         print("Invalid input")
-        homePage()
+        homePage(name, surname, email)
 
 
              
@@ -114,10 +114,37 @@ def deposit(name, surname, email):
                 parts = line.split(',')
                 if email == parts[2]:
                     lastTransaction = parts[-1].strip()
-                    balance = float(lastTransaction.split('-')[3].strip())
-                    newBalance = balance + float(amount)
+                    balance = round(float(lastTransaction.split('-')[3].strip()),2)
+                    newBalance = balance + round(float(amount),2)
                     customerDB.write(", Deposit - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(amount) + " - " + str(newBalance))
                     print("Deposit successful")
+    
+    customerDB.close()
+    anotherTransaction(name, surname, email)
+
+def withdraw(name, surname, email):
+    print("Enter the amount you would like to withdraw")
+    amount = input()
+    
+    # Read the file content into memory
+    with open('customerDB.csv', 'r') as file:
+        lines = file.readlines()
+
+    # Iterate through the lines and update the balance if email is found
+    with open('customerDB.csv', 'a') as customerDB:
+        for line in lines:
+            if email in line:
+                parts = line.split(',')
+                if email == parts[2]:
+                    lastTransaction = parts[-1].strip()
+                    balance = round(float(lastTransaction.split('-')[3].strip()),2)
+                    if balance < float(amount):
+                        print("Insufficient balance")
+                        withdraw(name, surname, email)
+                    else:  
+                        newBalance = balance - round(float(amount),2)
+                        customerDB.write(", Withdraw - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(amount) + " - " + str(newBalance))
+                        print("Withdraw successful")
     
     customerDB.close()
     anotherTransaction(name, surname, email)
