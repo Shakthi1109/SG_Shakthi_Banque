@@ -6,10 +6,9 @@ def instantiateCustomerDb():
         customerDB.close()
 
 def checkCustomerStatus():
-    print("Are you an existing customer ? (y/n)")
-    customerStatusFlag = input()
+    customerStatusFlag = input("Are you an existing customer ? (y/n) : ")[:1].lower()
     if customerStatusFlag == 'y':
-        print("Welcome back, customer")
+        print("Welcome back!")
         login() 
     elif customerStatusFlag == 'n':
         print("Hello! new customer")
@@ -19,53 +18,45 @@ def checkCustomerStatus():
         checkCustomerStatus()
 
 def createAccount():
-    print("Let's create an account for you")
-    print("Enter your Surname")
-    surname = input()
-    print("Enter your name")
-    name = input()
-    print("Enter your email")
-    email = input()
-    print("create a password")
-    password = input()
-    print("Confirm your password")
-    confirmPassword = input()
+    print("Let's create an account for you.\n")
+    surname = input("Enter your Surname (MAX 50 Chars) : ")[:50]
+    name = input("Enter your name (MAX 50 Chars) : ")[:50]
+    email = input("Enter your email (MAX 50 Chars) : ")[:50]
+    password = input("Create a password (MAX 50 Chars) : ")[:50]
+    confirmPassword = input("Confirm your password : ")
     if password == confirmPassword:
         print("Account created successfully")
+        firstTransaction = "Deposit - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(0) + " - " + str(0)
         with open('customerDB.csv', 'a') as customerDB:
-            customerDB.write("\n"+surname + "," + name + "," + email + "," + password + "," + "Deposit - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(0) + " - " + str(0))
+            customerDB.write("\n"+surname + "," + name + "," + email + "," + password + "," + firstTransaction )
         customerDB.close()
         checkCustomerStatus()
     else:
-        print("Password mismatch")
+        print("Password mismatch. Try again\n")
         createAccount()
 
 def login():
-    print("Enter your email")
-    email = input()
-    print("Enter your password")
-    password = input()
+    email = input("Enter your email (MAX 50 Chars) : ")[:50]
+    password = input("Create a password (MAX 50 Chars) : ")[:50]
     loginFlag = False
     try:
 
-        # Read the file content into memory
         with open('customerDB.csv', 'r') as file:
             lines = file.readlines()
             
             for line in lines:
                 if email in line:
                     parts = line.split(',')
-                
                     if email == parts[2]:
                         if password == parts[3]:
-                            print("Login successful")
+                            print("\n*****Login successful*****\n")
                             loginFlag = True
                             homePage(parts[1], parts[0], parts[2])
                         else:
-                            print("Invalid password")
+                            print("\nInvalid password. Try again\n")
                             login()
             if not loginFlag:
-                print("Email not found. Please create an account or contact customer support")
+                print("\nEmail not found. Please create an account or contact customer support.\n")
                     
         file.close()
 
@@ -78,15 +69,15 @@ def login():
   
 
 def homePage(name, surname, email):
-    print("Welcome "+ name +" "+ surname)
-    print("What would you like to do today ?")
+    print("\nWelcome "+ name +" "+ surname)
+    print("\nWhat would you like to do today ?")
     print("1. Deposit")
     print("2. Withdraw")
     print("3. Print Statement")
     print("4. Download Statement")
     print("5. Show Balance")
     print("6. Exit")
-    option = input()
+    option = input()[:1]
     if option == '1':
         deposit(name, surname, email)
     elif option == '2':
@@ -98,24 +89,21 @@ def homePage(name, surname, email):
     elif option == '5':
         showBalance(name, surname, email)
     elif option == '6':
-        print("Thank you for banking with us. Have a nice day")
+        print("\nThank you for banking with us. Have a nice day.\n")
         exit()
     else:
-        print("Invalid input")
+        print("\nInvalid input\n")
         homePage(name, surname, email)
 
 
 
              
 def deposit(name, surname, email):
-    print("Enter the amount you would like to deposit")
-    amount = input()
+    amount = input("\nEnter the amount you would like to deposit : ")[:50]
     
-    # Read the file content into memory
     with open('customerDB.csv', 'r') as file:
         lines = file.readlines()
 
-    # Iterate through the lines and update the balance if email is found
     with open('customerDB.csv', 'a') as customerDB:
         for line in lines:
             if email in line:
@@ -125,21 +113,19 @@ def deposit(name, surname, email):
                     balance = float(lastTransaction.split('-')[3].strip())
                     newBalance = balance + float(amount)
                     customerDB.write(", Deposit - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(round(float(amount),2)) + " - " + str(round(float(newBalance),2)))
-                    print("Deposit successful")
+                    print("\n*****Deposit successful*****\n")
     
     customerDB.close()
     anotherTransaction(name, surname, email)
 
 def withdraw(name, surname, email):
-    print("Enter the amount you would like to withdraw")
-    amount = input()
+    print("\nEnter the amount you would like to withdraw: ")
+    amount = input()[:50]
     
-    # Read the file content into memory
     with open('customerDB.csv', 'r') as file:
         lines = file.readlines()
 
-    # Iterate through the lines and update the balance if email is found
-    with open('customerDB.csv', 'a') as customerDB:
+    with open('customerDB.csv', 'a', encoding='utf-8') as customerDB:
         for line in lines:
             if email in line:
                 parts = line.split(',')
@@ -147,23 +133,22 @@ def withdraw(name, surname, email):
                     lastTransaction = parts[-1].strip()
                     balance = float(lastTransaction.split('-')[3].strip())
                     if balance < float(amount):
-                        print("Insufficient balance")
+                        print("\nInsufficient balance\n")
                         withdraw(name, surname, email)
                     else:  
                         newBalance = balance - float(amount)
-                        customerDB.write(", Withdraw - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(round(float(amount)),2) + " - " + str(round(float(newBalance))),2)
-                        print("Withdraw successful")
+                        # Fix the line below to correct the formatting issue
+                        customerDB.write(",Withdraw - " + str(datetime.now().strftime("%d/%m/%Y")) + " - " + str(round(float(amount), 2)) + " - " + str(round(float(newBalance), 2)))
+                        print("\n*****Withdraw successful*****\n")
     
-    customerDB.close()
     anotherTransaction(name, surname, email)
 
 
+
 def printStatement(name, surname, email):
-    # Read the file content into memory
     with open('customerDB.csv', 'r') as file:
         lines = file.readlines()
 
-    # Iterate through the lines and update the balance if email is found
     for line in lines:
         if email in line:
             parts = line.split(',')
@@ -174,29 +159,26 @@ def printStatement(name, surname, email):
                 print("Transactions: ")
                 for transaction in parts[4:]:
                     print(transaction.strip())
-    
+    print("\n*****End of Statement*****\n")
     anotherTransaction(name, surname, email)
 
+
 def downloadStatement(name, surname, email):
-    # Read the file content into memory
     with open('customerDB.csv', 'r') as file:
         lines = file.readlines()
 
-    # Iterate through the lines and update the balance if email is found
     for line in lines:
         if email in line:
             parts = line.split(',')
             if email == parts[2]:
-                filename= parts[1]+parts[0]+".txt"
+                filename= parts[1]+parts[0]+"_statement.txt"
                 with open(filename, 'w') as file:
-                    file.write("Name: "+ parts[1]+ "\n")
-                    file.write("Surname: "+ parts[0]+ "\n")
-                    file.write("Email: "+ parts[2]+ "\n")
-                    file.write("Transactions: \n")
-                    file.write("Operation, Date, Amount, Balance \n")
+                    file.write(f"Name: {parts[1]}\nSurname: {parts[0]}\nEmail: {parts[2]}\nTransactions:\nOperation - Date - Amount - Balance\n")
                     for transaction in parts[4:]:
                         file.write(transaction.strip()  + "\n")
+                    file.write("\n*****End of Statement*****\n")
                     file.close()
+                    print("\n*****Statement downloaded successfully*****\n")
     
     anotherTransaction(name, surname, email)
 
@@ -214,14 +196,14 @@ def showBalance(name, surname, email):
                     print("Your balance is: "+ str(balance))
 
     anotherTransaction(name, surname, email)
+    
 
-def anotherTransaction(name, surname, email):
-    print("Would you like to do another transaction ? (y/n)")                
-    transactionFlag = input()
+def anotherTransaction(name, surname, email):                
+    transactionFlag = input("\nWould you like to do another transaction ? (y/n) : ")[:1].lower()
     if transactionFlag == 'y':
         homePage(name, surname, email)
     elif transactionFlag == 'n':
-        print("Thank you for banking with us. Have a nice day")
+        print("\nThank you for banking with us. Have a nice day\n")
         exit()
     else:
         print("Invalid input")
@@ -229,7 +211,8 @@ def anotherTransaction(name, surname, email):
 
 
 if __name__ == "__main__":
-    print("Welcome to Shakthi Bank")
-    print()
+    print("\n########################")
+    print(" Welcome to Shakthi Bank")
+    print("########################\n")
     instantiateCustomerDb()
     checkCustomerStatus()
