@@ -83,19 +83,27 @@ def homePage(name, surname, email):
     print("1. Deposit")
     print("2. Withdraw")
     print("3. Print Statement")
-    print("4. Exit")
+    print("4. Download Statement")
+    print("5. Show Balance")
+    print("6. Exit")
     option = input()
     if option == '1':
         deposit(name, surname, email)
     elif option == '2':
         withdraw(name, surname, email)
     elif option == '3':
-        printStatement()
+        printStatement(name, surname, email)
     elif option == '4':
+        downloadStatement(name, surname, email)
+    elif option == '5':
+        showBalance(name, surname, email)
+    elif option == '6':
+        print("Thank you for banking with us. Have a nice day")
         exit()
     else:
         print("Invalid input")
         homePage(name, surname, email)
+
 
 
              
@@ -114,9 +122,9 @@ def deposit(name, surname, email):
                 parts = line.split(',')
                 if email == parts[2]:
                     lastTransaction = parts[-1].strip()
-                    balance = round(float(lastTransaction.split('-')[3].strip()),2)
-                    newBalance = balance + round(float(amount),2)
-                    customerDB.write(", Deposit - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(amount) + " - " + str(newBalance))
+                    balance = float(lastTransaction.split('-')[3].strip())
+                    newBalance = balance + float(amount)
+                    customerDB.write(", Deposit - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(round(float(amount),2)) + " - " + str(round(float(newBalance),2)))
                     print("Deposit successful")
     
     customerDB.close()
@@ -137,18 +145,75 @@ def withdraw(name, surname, email):
                 parts = line.split(',')
                 if email == parts[2]:
                     lastTransaction = parts[-1].strip()
-                    balance = round(float(lastTransaction.split('-')[3].strip()),2)
+                    balance = float(lastTransaction.split('-')[3].strip())
                     if balance < float(amount):
                         print("Insufficient balance")
                         withdraw(name, surname, email)
                     else:  
-                        newBalance = balance - round(float(amount),2)
-                        customerDB.write(", Withdraw - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(amount) + " - " + str(newBalance))
+                        newBalance = balance - float(amount)
+                        customerDB.write(", Withdraw - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(round(float(amount)),2) + " - " + str(round(float(newBalance))),2)
                         print("Withdraw successful")
     
     customerDB.close()
     anotherTransaction(name, surname, email)
 
+
+def printStatement(name, surname, email):
+    # Read the file content into memory
+    with open('customerDB.csv', 'r') as file:
+        lines = file.readlines()
+
+    # Iterate through the lines and update the balance if email is found
+    for line in lines:
+        if email in line:
+            parts = line.split(',')
+            if email == parts[2]:
+                print("Name: "+ parts[1])
+                print("Surname: "+ parts[0])
+                print("Email: "+ parts[2])
+                print("Transactions: ")
+                for transaction in parts[4:]:
+                    print(transaction.strip())
+    
+    anotherTransaction(name, surname, email)
+
+def downloadStatement(name, surname, email):
+    # Read the file content into memory
+    with open('customerDB.csv', 'r') as file:
+        lines = file.readlines()
+
+    # Iterate through the lines and update the balance if email is found
+    for line in lines:
+        if email in line:
+            parts = line.split(',')
+            if email == parts[2]:
+                filename= parts[1]+parts[0]+".txt"
+                with open(filename, 'w') as file:
+                    file.write("Name: "+ parts[1]+ "\n")
+                    file.write("Surname: "+ parts[0]+ "\n")
+                    file.write("Email: "+ parts[2]+ "\n")
+                    file.write("Transactions: \n")
+                    file.write("Operation, Date, Amount, Balance \n")
+                    for transaction in parts[4:]:
+                        file.write(transaction.strip()  + "\n")
+                    file.close()
+    
+    anotherTransaction(name, surname, email)
+
+def showBalance(name, surname, email):
+
+    with open('customerDB.csv', 'r') as file:
+        lines = file.readlines()
+
+        for line in lines:
+            if email in line:
+                parts = line.split(',')
+                if email == parts[2]:
+                    lastTransaction = parts[-1].strip()
+                    balance = round(float(lastTransaction.split('-')[3].strip()),2)
+                    print("Your balance is: "+ str(balance))
+
+    anotherTransaction(name, surname, email)
 
 def anotherTransaction(name, surname, email):
     print("Would you like to do another transaction ? (y/n)")                
