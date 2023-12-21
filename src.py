@@ -1,12 +1,18 @@
+####################################################################
+# Programmed by Shakthivel MURUGAVEL @ Paris, France on 21-12-2023 #
+####################################################################
+
 from datetime import datetime
 import getpass
 import hashlib
 
+# Create a new file called customerDB.csv and write the header
 def instantiateCustomerDb():
     with open('customerDB.csv', 'w') as customerDB:
         customerDB.write("Surname,Name,Email,Password,Transactions")
         customerDB.close()
 
+# Check if the customer is an existing customer or a new customer
 def checkCustomerStatus():
     customerStatusFlag = input("Are you an existing customer ? (y/n) : ")[:1].lower()
     if customerStatusFlag == 'y':
@@ -19,11 +25,14 @@ def checkCustomerStatus():
         print("Invalid input")
         checkCustomerStatus()
 
+# Create a new account for the customer
 def createAccount():
     print("Let's create an account for you.\n")
     surname = input("Enter your Surname (MAX 50 Chars) : ")[:50]
     name = input("Enter your name (MAX 50 Chars) : ")[:50]
     email = input("Enter your email (MAX 50 Chars) : ")[:50]
+
+    # Check if the email already exists in the database
     try:
         with open('customerDB.csv', 'r') as file:
                 lines = file.readlines()
@@ -47,6 +56,8 @@ def createAccount():
         else:
             print("Password mismatch. Try again.\n")
             createAccount()
+
+    # Handle exceptions
     except FileNotFoundError:
         print("The file 'customerDB.csv' was not found.")
         checkCustomerStatus()
@@ -57,6 +68,7 @@ def createAccount():
         print("An error occurred:", e)
         checkCustomerStatus()
 
+# Login to the account
 def login():
     email = input("Enter your email : ")[:50]
     password = hash_password(getpass.getpass("Enter your password : ")[:50])
@@ -83,6 +95,7 @@ def login():
                     
         file.close()
 
+    # Handle exceptions
     except FileNotFoundError:
         print("The file 'customerDB.csv' was not found.")
         checkCustomerStatus()
@@ -93,7 +106,7 @@ def login():
         print("An error occurred:", e)
         checkCustomerStatus()
   
-
+# Home page for the customer
 def homePage(name, surname, email):
     print("\nWelcome "+ name +" "+ surname)
     print("\nWhat would you like to do today ? ")
@@ -121,13 +134,13 @@ def homePage(name, surname, email):
         print("\nInvalid input\n")
         homePage(name, surname, email)
 
-
+# Password protection
 def hash_password(password):
    password_bytes = password.encode('utf-8')
    hash_object = hashlib.sha256(password_bytes)
    return hash_object.hexdigest()
 
-             
+# Transaction functions         
 def deposit(name, surname, email):
     try:
         amount = input("\nEnter the amount you would like to deposit : ")[:50]
@@ -152,6 +165,7 @@ def deposit(name, surname, email):
 
     customerDB.close()
     anotherTransaction(name, surname, email)
+
 
 def withdraw(name, surname, email):
     try:
@@ -180,7 +194,6 @@ def withdraw(name, surname, email):
         withdraw(name, surname, email)
     
     anotherTransaction(name, surname, email)
-
 
 
 def printStatement(name, surname, email):
