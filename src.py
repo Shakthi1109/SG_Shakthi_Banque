@@ -1,4 +1,6 @@
 from datetime import datetime
+import getpass
+import hashlib
 
 def instantiateCustomerDb():
     with open('customerDB.csv', 'w') as customerDB:
@@ -8,7 +10,7 @@ def instantiateCustomerDb():
 def checkCustomerStatus():
     customerStatusFlag = input("Are you an existing customer ? (y/n) : ")[:1].lower()
     if customerStatusFlag == 'y':
-        print("Welcome back!")
+        print("Welcome back, Customer. Please login")
         login() 
     elif customerStatusFlag == 'n':
         print("Hello! new customer")
@@ -22,8 +24,8 @@ def createAccount():
     surname = input("Enter your Surname (MAX 50 Chars) : ")[:50]
     name = input("Enter your name (MAX 50 Chars) : ")[:50]
     email = input("Enter your email (MAX 50 Chars) : ")[:50]
-    password = input("Create a password (MAX 50 Chars) : ")[:50]
-    confirmPassword = input("Confirm your password : ")
+    password = hash_password(getpass.getpass("Create a password (MAX 50 Chars) : ")[:50])
+    confirmPassword = hash_password(getpass.getpass("Confirm your password : ")[:50])
     if password == confirmPassword:
         print("Account created successfully")
         firstTransaction = "Deposit - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(0) + " - " + str(0)
@@ -36,8 +38,8 @@ def createAccount():
         createAccount()
 
 def login():
-    email = input("Enter your email (MAX 50 Chars) : ")[:50]
-    password = input("Create a password (MAX 50 Chars) : ")[:50]
+    email = input("Enter your email : ")[:50]
+    password = hash_password(getpass.getpass("Enter your password : ")[:50])
     loginFlag = False
     try:
 
@@ -57,6 +59,7 @@ def login():
                             login()
             if not loginFlag:
                 print("\nEmail not found. Please create an account or contact customer support.\n")
+                checkCustomerStatus()
                     
         file.close()
 
@@ -96,6 +99,10 @@ def homePage(name, surname, email):
         homePage(name, surname, email)
 
 
+def hash_password(password):
+   password_bytes = password.encode('utf-8')
+   hash_object = hashlib.sha256(password_bytes)
+   return hash_object.hexdigest()
 
              
 def deposit(name, surname, email):
@@ -134,7 +141,7 @@ def withdraw(name, surname, email):
                     balance = float(lastTransaction.split('-')[3].strip())
                     if balance < float(amount):
                         print("\nInsufficient balance\n")
-                        withdraw(name, surname, email)
+                        homePage(name, surname, email)
                     else:  
                         newBalance = balance - float(amount)
                         # Fix the line below to correct the formatting issue
@@ -153,10 +160,8 @@ def printStatement(name, surname, email):
         if email in line:
             parts = line.split(',')
             if email == parts[2]:
-                print("Name: "+ parts[1])
-                print("Surname: "+ parts[0])
-                print("Email: "+ parts[2])
-                print("Transactions: ")
+                print("Name: "+ parts[1]+ "\nSurname: "+ parts[0]+"\nEmail: "+ parts[2])
+                print("Transactions: "+ "\nOperation - Date - Amount - Balance")
                 for transaction in parts[4:]:
                     print(transaction.strip())
     print("\n*****End of Statement*****\n")
