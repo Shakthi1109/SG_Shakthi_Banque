@@ -148,16 +148,21 @@ def deposit(name, surname, email):
         with open('customerDB.csv', 'r') as file:
             lines = file.readlines()
 
-        with open('customerDB.csv', 'a') as customerDB:
-            for line in lines:
-                if email in line:
-                    parts = line.split(',')
-                    if email == parts[2]:
-                        lastTransaction = parts[-1].strip()
-                        balance = float(lastTransaction.split('-')[3].strip())
-                        newBalance = balance + float(amount)
-                        customerDB.write(", Deposit - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(float(amount)) + " - " + str(float(newBalance)))
-                        print("\n*****Deposit successful*****\n")
+        updated_lines=[]
+        for line in lines:
+            if email in line:
+                parts = line.split(',')
+                if email == parts[2]:
+                    lastTransaction = parts[-1].strip()
+                    balance = float(lastTransaction.split('-')[3].strip())
+                    newBalance = balance + float(amount)
+                    line = line.rstrip() + f", Deposit - {datetime.now().strftime('%d/%m/%Y')} - {float(amount)} - {float(newBalance)}\n"
+                    # customerDB.write(", Deposit - "+ str(datetime.now().strftime("%d/%m/%Y"))+ " - "+ str(float(amount)) + " - " + str(float(newBalance)))
+                    print("\n*****Deposit successful*****\n")
+            updated_lines.append(line)
+        
+        with open('customerDB.csv', 'w') as customerDB:
+            customerDB.writelines(updated_lines)
     
     except ValueError:
         print("\nInvalid input")
@@ -174,21 +179,26 @@ def withdraw(name, surname, email):
         with open('customerDB.csv', 'r') as file:
             lines = file.readlines()
 
-        with open('customerDB.csv', 'a', encoding='utf-8') as customerDB:
-            for line in lines:
-                if email in line:
-                    parts = line.split(',')
-                    if email == parts[2]:
-                        lastTransaction = parts[-1].strip()
-                        balance = float(lastTransaction.split('-')[3].strip())
-                        if balance < float(amount):
-                            print("\nInsufficient balance\n")
-                            homePage(name, surname, email)
-                        else:  
-                            newBalance = balance - float(amount)
-                            # Fix the line below to correct the formatting issue
-                            customerDB.write(",Withdraw - " + str(datetime.now().strftime("%d/%m/%Y")) + " - " + str(round(float(amount), 2)) + " - " + str(round(float(newBalance), 2)))
-                            print("\n*****Withdraw successful*****\n")
+        updated_lines = []
+        for line in lines:
+            if email in line:
+                parts = line.split(',')
+                if email == parts[2]:
+                    lastTransaction = parts[-1].strip()
+                    balance = float(lastTransaction.split('-')[3].strip())
+                    if balance < float(amount):
+                        print("\nInsufficient balance\n")
+                        homePage(name, surname, email)
+                    else:  
+                        newBalance = balance - float(amount)
+                        line = line.rstrip() + f", Withdraw - {datetime.now().strftime('%d/%m/%Y')} - {round(float(amount), 2)} - {round(float(newBalance), 2)}\n"
+                        #customerDB.write(",Withdraw - " + str(datetime.now().strftime("%d/%m/%Y")) + " - " + str(round(float(amount), 2)) + " - " + str(round(float(newBalance), 2)))
+                        print("\n*****Withdraw successful*****\n")
+            updated_lines.append(line)
+
+        with open('customerDB.csv', 'w') as customerDB:
+            customerDB.writelines(updated_lines)
+            
     except ValueError:
         print("\nInvalid input")
         withdraw(name, surname, email)
